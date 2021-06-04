@@ -1,0 +1,189 @@
+<template>
+  <div class="container" :style="{minHeight: height + 'px'}">
+    <div class="top">
+      <span class="font">用例编号：{{data.code}}</span>
+      <span class="font">用例类型：{{data.type}}</span>
+      <span class="font">用例内容：{{data.name}}</span>
+      <div class="top-right">
+        <span>是否必测：<el-switch
+          v-model="data.isRequired"
+          :width="70"
+          :active-value="1"
+          :inactive-value="0"
+          active-text="是"
+          inactive-text="否"
+          disabled
+        >
+      </el-switch></span>
+        <el-button type="warning" @click="addparams">添加参数</el-button>
+      </div>
+    </div>
+    <div class="table">
+      <el-table
+        stripe
+        :data="tableData"
+        style="width: 100%; font-size: 16px"
+        border
+        :max-height="maxHeight"
+      >
+        <el-table-column label="输入参数">
+          <template slot-scope="scope">
+            <el-input v-model="scope.row.param"></el-input>
+          </template>
+        </el-table-column>
+        <el-table-column label="参数默认值">
+          <template slot-scope="scope">
+            <el-input v-model="scope.row.defaultData"></el-input>
+          </template>
+        </el-table-column>
+        <el-table-column label="超时时间（s）">
+          <template slot-scope="scope">
+            <el-input v-model="scope.row.timeOut"></el-input>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="120">
+          <template slot-scope="scope">
+            <el-button
+              type="text"
+              size="small"
+              style="
+                                color: rgba(175, 90, 0, 100);
+                                font-size: 14px;
+                            "
+              @click="delparams(scope.row)"
+            >删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <div class="footer" >
+        <el-button type="warning" @click="save">保存</el-button>
+        <el-button type="warning" plain @click="back">取消</el-button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import mylib from '../../api/mylib'
+import { useCasesDetails, useCasesdel, useCasesUpdate } from '@/api/index'
+export default {
+  name: 'editExample',
+  data () {
+    return {
+      tableData: [],
+      maxHeight: mylib.height - 250,
+      data: {}
+    }
+  },
+  methods: {
+    back () {
+      sessionStorage.setItem('active', '2')
+      history.back()
+    },
+    save () {
+      var listUseCasesDetails = []
+      this.tableData.forEach((el) => {
+        listUseCasesDetails.push({
+          detailsId: el.detailsId,
+          param: el.param,
+          defaultData: el.defaultData,
+          timeOut: el.timeOut
+        })
+      })
+      var params = {
+        id: this.data.id,
+        listUseCasesDetails: listUseCasesDetails
+      }
+      mylib.axios({
+        url: '/useCases/update',
+        type: 'json',
+        params: params
+      }).then((res) => {
+        if (res.code == 200) {
+          this.$message.success(res.msg)
+          sessionStorage.setItem('active', '2')
+          this.$router.push('/index/useCase')
+        } else {
+          this.$message.error(res.msg)
+        }
+      })
+    },
+    addparams () {
+      this.tableData.push({
+        param: '',
+        defaultData: '',
+        timeOut: ''
+      })
+    },
+    delparams (row) {
+      mylib.axios({
+        url: '/useCasesDetails/remove',
+        params: {ids: row.detailsId}
+      }).then((res) => {
+        if (res.code == 200) {
+          this.$message.success(res.msg)
+        } else {
+          this.$message.error(res.msg)
+        }
+      })
+    }
+  },
+  created () {
+    const params = { id: this.$route.query.id }
+    mylib.axios({
+      url: '/useCases/queryById',
+      params: params
+    }).then((res) => {
+      this.data = res
+      this.tableData = res.listUseCasesDetails
+    })
+  }
+}
+</script>
+
+<style scoped>
+  .container{
+    position:relative;
+  }
+  .title{
+    font-size: 14px;
+    color:#000;
+    font-weight: bold;
+    margin-right:10px;
+  }
+  .table {
+    padding: 15px 15px;
+    width:100%;
+    font-size: 16px;
+    box-sizing: border-box;
+  }
+  .top {
+    width: 100%;
+    height: 55px;
+    line-height:55px;
+    box-sizing: border-box;
+  }
+  .top-right{
+    float:right;
+    margin-right:15px;
+    font-size:14px;
+    font-weight: bold;
+    color:#000;
+  }
+  .font{
+    font-size:14px;
+    color:#000;
+    font-weight: bold;
+    margin-left:18px;
+  }
+  .footer{
+    position:absolute;
+    bottom:0;
+    left:50%;
+    transform: translateX(-50%);
+  }
+  .add-btn{
+    float:right;
+    margin-right:15px;
+  }
+</style>

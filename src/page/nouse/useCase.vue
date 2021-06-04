@@ -1,0 +1,417 @@
+<template>
+  <div>
+    <!-- 用例管理 -->
+<!--    <el-tabs type="card" v-model="activeName" @tab-click="handle">-->
+<!--      <el-tab-pane label="分组管理" name="1">-->
+<!--      </el-tab-pane>-->
+<!--      <el-tab-pane label="用例管理" name="2">-->
+<!--      </el-tab-pane>-->
+<!--    </el-tabs>-->
+    <div class="container" v-show="activeName == 1" :style="{minHeight: height + 'px'}">
+      <div class='form'>
+        <div class='forms'>
+          <el-input
+            v-model='name'
+            placeholder='分组名称'
+            clearable
+            class='header-input'/>
+          <el-select
+            v-model='status'
+            placeholder='状态'
+            clearable
+            class='header-input'>
+            <el-option
+              label='已关闭'
+              :value='0'/>
+            <el-option
+              label='已启用'
+              :value='1'/>
+          </el-select>
+          <el-button type='warning' @click='search'>搜索</el-button>
+          <el-button type='warning' @click='fromline' plain>重置</el-button>
+        </div>
+        <div class='ad'>
+          <div @click="addGroup" style="margin-right:20px;" class="btn">
+            <div><img src="../../assets/image/add-icon.svg" alt=""></div>
+            <div>新增</div>
+          </div>
+        </div>
+      </div>
+      <div class="table">
+        <el-table
+          stripe
+          :data="groupArr"
+          style="width: 100%; font-size: 16px"
+          border
+          :max-height="maxHeight - 50"
+        >
+          <el-table-column type='index' label='序号' width='70' :index="indexMethod">
+          </el-table-column>
+          <el-table-column prop="name" label="分组名称">
+          </el-table-column>
+          <el-table-column prop="descrie" label="描述">
+          </el-table-column>
+          <el-table-column label="状态">
+            <template slot-scope="scope">
+              <el-button
+                v-if="scope.row.status == 1"
+                type="success"
+                round
+                size="mini"
+              >已启用</el-button
+              >
+              <el-button
+                v-else-if="scope.row.status == 0"
+                type="info"
+                round
+                size="mini"
+              >已关闭</el-button
+              >
+            </template>
+          </el-table-column>
+          <el-table-column label="操作">
+            <template slot-scope="scope">
+              <el-button
+                @click="handleClick(scope.row)"
+                type="text"
+                size="small"
+                style="
+                                color: rgba(175, 90, 0, 100);
+                                font-size: 14px;
+                            "
+              >查看详情
+              </el-button>
+              <el-button
+                type="text"
+                size="small"
+                style="
+                                color: rgba(175, 90, 0, 100);
+                                font-size: 14px;
+                            "
+                @click="change(scope.row)"
+              >修改</el-button>
+              <el-button
+                type="text"
+                size="small"
+                style="
+                                color: rgba(175, 90, 0, 100);
+                                font-size: 14px;
+                            "
+                @click="delGroup(scope.row)"
+              >删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        <el-pagination
+          background
+          class="page"
+          style="margin-top:20px;margin-left:10px;"
+          @current-change="handleCurrentChange"
+          @size-change="handleSizeChange"
+          :current-page.sync="currentPage"
+          :page-size="pageSize"
+          layout="sizes, total, prev, pager, next"
+          :total="total">
+        </el-pagination>
+      </div>
+    </div>
+<!--    <div class="container" v-show="activeName == 2" :style="{minHeight: height + 'px'}">-->
+<!--      <div class='form'>-->
+<!--        <div class='forms'>-->
+<!--          <el-input-->
+<!--            v-model='code'-->
+<!--            placeholder='用例编号'-->
+<!--            clearable-->
+<!--            class='header-input'/>-->
+<!--          <el-input v-model="cmdCode" placeholder='指令编号' class='header-input' clearable></el-input>-->
+<!--          <el-select-->
+<!--            v-model='type'-->
+<!--            placeholder='用例类型'-->
+<!--            clearable-->
+<!--            class='header-input'>-->
+<!--            <el-option label="MAC层" value="MAC层"></el-option>-->
+<!--            <el-option label="网络层" value="网络层"></el-option>-->
+<!--            <el-option label="业务层" value="业务层"></el-option>-->
+<!--          </el-select>-->
+<!--          <el-button type='warning' @click='search1'>搜索</el-button>-->
+<!--          <el-button type='warning' @click='fromline1' plain>重置</el-button>-->
+<!--        </div>-->
+<!--        <div class='ad'>-->
+<!--          <div @click="add" style="margin-right:20px;" class="btn">-->
+<!--            <div><img src="../../assets/image/add-icon.svg" alt=""></div>-->
+<!--            <div>新增</div>-->
+<!--          </div>-->
+<!--        </div>-->
+<!--      </div>-->
+<!--      <div class="table">-->
+<!--        <el-table-->
+<!--          stripe-->
+<!--          :data="tableData"-->
+<!--          style="width: 100%; font-size: 16px"-->
+<!--          border-->
+<!--          :max-height="maxHeight"-->
+<!--        >-->
+<!--          <el-table-column label="用例编号" prop="code">-->
+<!--          </el-table-column>-->
+<!--          <el-table-column prop="type" label="用例类型">-->
+<!--          </el-table-column>-->
+<!--          <el-table-column prop="cmdCode" label="指令编号">-->
+<!--          </el-table-column>-->
+<!--          <el-table-column prop="name" label="用例内容">-->
+<!--          </el-table-column>-->
+<!--          <el-table-column prop="listUseCasesDetails" label="输入参数">-->
+<!--            <template slot-scope="scope">-->
+<!--              <p v-for="(item, index) in scope.row.listUseCasesDetails" :key="index">{{item.param}}</p>-->
+<!--            </template>-->
+<!--          </el-table-column>-->
+<!--          <el-table-column prop="listUseCasesDetails" label="参数默认值">-->
+<!--            <template slot-scope="scope">-->
+<!--              <p v-for="(item, index) in scope.row.listUseCasesDetails" :key="index">-->
+<!--                {{item.defaultData ? item.defaultData : '-'}}-->
+<!--              </p>-->
+<!--            </template>-->
+<!--          </el-table-column>-->
+<!--          <el-table-column prop="listUseCasesDetails" label="超时时间（s）">-->
+<!--            <template slot-scope="scope">-->
+<!--              <p v-for="(item, index) in scope.row.listUseCasesDetails" :key="index">-->
+<!--                {{item.timeOut ? item.timeOut : '-'}}-->
+<!--              </p>-->
+<!--            </template>-->
+<!--          </el-table-column>-->
+<!--          <el-table-column prop="isRequired" label="是否必测">-->
+<!--            <template slot-scope="scope">-->
+<!--              <span style="color:#ff0000;"-->
+<!--                    v-if="scope.row.isRequired == 1"-->
+<!--              >必测</span>-->
+<!--              <span-->
+<!--                v-else-if="scope.row.isRequired == 0"-->
+<!--              >可选</span>-->
+<!--            </template>-->
+<!--          </el-table-column>-->
+<!--          <el-table-column label="操作">-->
+<!--            <template slot-scope="scope">-->
+<!--              <el-button-->
+<!--                type="text"-->
+<!--                size="small"-->
+<!--                style="-->
+<!--                                color: rgba(175, 90, 0, 100);-->
+<!--                                font-size: 14px;-->
+<!--                            "-->
+<!--                @click="update(scope.row)"-->
+<!--              >修改</el-button>-->
+<!--              <el-button-->
+<!--                type="text"-->
+<!--                size="small"-->
+<!--                style="-->
+<!--                                color: rgba(175, 90, 0, 100);-->
+<!--                                font-size: 14px;-->
+<!--                            "-->
+<!--                @click="delUse(scope.row)"-->
+<!--              >删除</el-button>-->
+<!--            </template>-->
+<!--          </el-table-column>-->
+<!--        </el-table>-->
+<!--      </div>-->
+<!--    </div>-->
+  </div>
+</template>
+
+<script>
+import { GroupList, getTableData, delUse, delGroup } from '@/api/index'
+import mylib from '../../api/index'
+export default {
+  name: 'useCase',
+  data () {
+    return {
+      maxHeight: mylib.height - 205,
+      tableData: [],
+      groupArr: [],
+      activeName: '1',
+      height: mylib.height - 120,
+      status: '',
+      name: '',
+      currentPage: 1,
+      pageSize: 10,
+      total: 0,
+      code: '',
+      cmdCode: '',
+      type: ''
+    }
+  },
+  created () {
+    // this.activeName = sessionStorage.getItem('active') || '1'
+    this.getGroup()
+    this.getUse()
+  },
+  methods: {
+    // handle () {
+    //   sessionStorage.setItem('active', this.activeName)
+    // },
+    // 新增用例
+    // add () {
+    //   this.$router.push('/index/addExample')
+    // },
+    // 修改用例
+    update (row) {
+      this.$router.push({path: '/index/editExample', query: {id: row.id}})
+    },
+    // 新增分组
+    addGroup () {
+      this.$router.push('/index/addGroup')
+    },
+    // 修改分组
+    change (row) {
+      this.$router.push({path: '/index/editGroup', query: {id: row.id}})
+    },
+    // 删除分组
+    delGroup (row) {
+      this.$confirm('是否删除该分组?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        mylib.axios({
+          url: '/useCasesGroup/remove',
+          params: {
+            ids: row.id
+          }
+        }).then((res) => {
+          if (res.code == 200) {
+            this.$message({
+              type: 'success',
+              message: res.msg
+            })
+            this.getGroup()
+          } else {
+            this.$message({
+              type: 'error',
+              message: res.msg
+            })
+          }
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        })
+      })
+    },
+    // 删除用例
+    // delUse (row) {
+    //   this.$confirm('是否删除该用例?', '提示', {
+    //     confirmButtonText: '确定',
+    //     cancelButtonText: '取消',
+    //     type: 'warning'
+    //   }).then(() => {
+    //     mylib.axios({
+    //         url: '/useCases/remove',
+    //         params: {ids: row.id}
+    //     }).then((res) => {
+    //       if (res.code == 200) {
+    //         this.$message({
+    //           type: 'success',
+    //           message: res.msg
+    //         })
+    //         this.getUse()
+    //       } else {
+    //         this.$message({
+    //           type: 'error',
+    //           message: res.msg
+    //         })
+    //       }
+    //     })
+    //   }).catch(() => {
+    //     this.$message({
+    //       type: 'info',
+    //       message: '已取消删除'
+    //     })
+    //   })
+    // },
+    handleClick (row) {
+      this.$router.push({name: 'seeDetails', query: {id: row.id}})
+    },
+    search () {
+      this.getGroup()
+    },
+    fromline () {
+      this.name = ''
+      this.status = ''
+    },
+    search1 () {
+      this.getUse()
+    },
+    fromline1 () {
+      this.code = ''
+      this.cmdCode = ''
+      this.type = ''
+    },
+    indexMethod (index) {
+      return (index + 1) + (this.currentPage - 1) * this.pageSize
+    },
+    handleCurrentChange () {
+      this.getGroup()
+    },
+    handleSizeChange (val) {
+      this.pageSize = val
+      this.getGroup()
+    },
+    getGroup () {
+      var params = {
+        start: this.currentPage,
+        pageSize: this.pageSize,
+        name: this.name,
+        status: this.status
+      }
+      mylib.axios({
+        url: '/useCasesGroup/list',
+        params: params
+      }).then((res) => {
+        this.groupArr = res.data.rows
+        this.total = res.data.total
+        // console.log(res);
+      })
+    },
+    getUse () {
+      var params = {
+        code: this.code,
+        cmdCode: this.cmdCode,
+        type: this.type
+      }
+      mylib.getTableData(params).then((res) => {
+        this.tableData = res
+      })
+    }
+  }
+}
+</script>
+<style scoped>
+.table {
+    padding: 10px 15px 0;
+    width:100%;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+.router-link-active {
+    text-decoration: none;
+}
+.form {
+  box-shadow: 0px 2px 4px 0px #d7ddf7;
+  height: 55px;
+  width: 100%;
+  background:#fff;
+  margin-bottom:2px;
+}
+
+.forms {
+  margin-top: 13px;
+  margin-left: 15px;
+  display: inline-block;
+}
+.ad{
+  float:right;
+}
+.header-input{
+  width:180px;
+  margin-right:20px;
+}
+</style>
