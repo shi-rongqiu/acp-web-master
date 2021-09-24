@@ -716,25 +716,25 @@ export default {
     initData (data) {
       data.name = data.code ? data.code : data.name
       if (data.nodeType == 0) {
-        data.symbol = 'image://static/接入节点.svg'
+        data.symbol = 'image://static/jieru.svg'
         data.label = {
           rotate: 0
         }
       }
       if (data.nodeType == 1) {
-        data.symbol = 'image://static/汇聚节点.svg'
+        data.symbol = 'image://static/huiju.svg'
         data.label = {
           rotate: 0
         }
       }
       if (data.nodeType == 2) {
-        data.symbol = 'image://static/低功耗.svg'
+        data.symbol = 'image://static/digonghao.svg'
       }
       if (data.nodeType == 3) {
-        data.symbol = 'image://static/汇聚节点.svg'
+        data.symbol = 'image://static/huiju.svg'
       }
       if (data.nodeType == 4) {
-        data.symbol = 'image://static/微功耗.svg'
+        data.symbol = 'image://static/weigonghao.svg'
       }
       if (data.params && data.params.length > 0) {
         data.children = data.params

@@ -94,13 +94,14 @@
             <el-table-column
                 prop='useCasesType'
                 label='被测类型'
+                width="120"
             >
             </el-table-column>
             <el-table-column prop='deviceName' label='被测名称'>
             </el-table-column>
-            <el-table-column prop='deviceModel' label='型号'>
+            <el-table-column prop='deviceModel' label='型号' width="120">
             </el-table-column>
-            <el-table-column prop='deviceCode' label='编号' width="160">
+            <el-table-column prop='deviceCode' label='编号'>
             </el-table-column>
             <el-table-column prop='createTime' label='时间' width='180'>
             </el-table-column>
@@ -134,6 +135,13 @@
                     size='mini'
                     style="background:rgba(175, 90, 0, 100)"
                   >已暂停</el-button
+                  >
+                  <el-button
+                    v-else-if='scope.row.projectStatus == 4'
+                    type='info'
+                    round
+                    size='mini'
+                  >等待中</el-button
                   >
                 </template>
             </el-table-column>
@@ -300,7 +308,7 @@ export default {
     seeTesting (row) {
       this.$router.push({
         name: 'testing',
-        query: { projectCode: row.projectCode }
+        query: { projectCode: row.projectCode, userName: row.userName }
       })
     },
     report (row) {

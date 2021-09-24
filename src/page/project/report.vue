@@ -130,7 +130,9 @@ export default {
       url: '/project/projectReport',
       params: params
     }).then((res) => {
-      this.attachment = res.data.attachment
+      if (res.data.attachment) {
+        this.attachment = res.data.attachment
+      }
       this.project = res.data.project
       this.projectConfig = res.data.projectConfig
       this.model = res.data.model

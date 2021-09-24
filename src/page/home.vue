@@ -46,7 +46,17 @@
             <div class="font">网络管理</div>
             <div class="english">Network management</div>
           </span>
-          <span class="rows" @click="change('5', '/index/userManage')">
+          <span class="rows" @click="change('5', '/index/device')">
+                <img
+                  class="img"
+                  src="../assets/image/device.png"
+                  alt=""
+                />
+            <div class="line"></div>
+            <div class="font">设备管理</div>
+            <div class="english">Device management</div>
+          </span>
+          <span class="rows" @click="change('6', '/index/userManage')">
                 <img
                     class="img"
                     src="../assets/image/system.png"

@@ -29,7 +29,7 @@
                       alt=""
                     />
 
-                    <div class="font">分组管理</div>
+                    <div class="font">用例管理</div>
                     <div class="triangle-down"></div>
                   </router-link>
                 </div>
@@ -64,6 +64,20 @@
                   </router-link>
                 </div>
                 <div class="rows" :class="{active: activeIndex == 5}" @click="change('5')">
+                  <router-link
+                    to="/index/device"
+                    style="text-decoration: none"
+                  >
+                    <img
+                      class="img"
+                      src="../assets/image/device.png"
+                      alt=""
+                    />
+                    <div class="font">设备管理</div>
+                    <div class="triangle-down1"></div>
+                  </router-link>
+                </div>
+                <div class="rows" :class="{active: activeIndex == 6}" @click="change('6')">
                   <router-link
                     to="/index/userManage"
                     style="text-decoration: none"
@@ -105,7 +119,7 @@
           </div>
         </el-header>
         <el-main>
-          <router-view></router-view>
+          <router-view @getMessage="showMsg"></router-view>
         </el-main>
       </el-container>
       <el-dialog
@@ -149,6 +163,11 @@ export default {
   methods: {
     show () {
       this.dialogVisible = true
+    },
+    showMsg (val) {
+      if (val) {
+        this.activeIndex = '1'
+      }
     },
     logout () {
       mylib.axios({

@@ -685,7 +685,7 @@ export default {
     // 初始化数据
     changeTree (data) {
       data.name = data.code
-      data.image_url = 'static/接入节点.svg'
+      data.image_url = 'static/jieru.svg'
       // data.label = {
       //   rotate: 0
       // }
@@ -716,11 +716,11 @@ export default {
           })
         }
         al.ch = res.split(',')
-        al.image_url = 'static/汇聚节点.svg'
+        al.image_url = 'static/huiju.svg'
         if (al.children && al.children.length > 0) {
           al.children.forEach((bl) => {
             bl.name = bl.code ? bl.code : bl.name
-            bl.image_url = 'static/低功耗.svg'
+            bl.image_url = 'static/digonghao.svg'
             // bl.lineStyle = {
             //   color: 'green'
             // }

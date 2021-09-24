@@ -86,9 +86,9 @@
         layout="sizes, total, prev, pager, next"
         :total="total">
       </el-pagination>
-      <div class="footer">
-        <el-button type="warning" @click="back">返回</el-button>
-      </div>
+<!--      <div class="footer">-->
+<!--        <el-button type="warning" @click="back">返回</el-button>-->
+<!--      </div>-->
     </div>
     <el-dialog
       :visible.sync='dialogVisible'

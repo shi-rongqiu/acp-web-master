@@ -68,12 +68,9 @@
                     <el-input
                         v-model='form.deviceModel'
                     ></el-input> </el-form-item
-                ><el-form-item label='设备数量：' prop="deviceNum">
-                    <el-input
-                        v-model='form.deviceNum'
-                    ></el-input> </el-form-item
-                ><el-form-item label='设备编号：' prop="deviceCode">
-                    <el-input v-model='form.deviceCode'></el-input>
+                >
+              <el-form-item label='设备编号：' prop="deviceCode">
+                   <el-input v-model='form.deviceCode'></el-input>
                 </el-form-item>
 
 <!--                <el-form-item label='有效时长：' prop="duration">-->
@@ -87,11 +84,7 @@
                   <div class='foots'>
                     <el-button type='warning' class='next' @click="next1('form')">下一步</el-button>
 
-                    <router-link to='/index'
-                    ><el-button type='warning' plain class='clear'
-                    >取消</el-button
-                    ></router-link
-                    >
+                    <el-button type='warning' plain class='clear' @click="handleCancel">取消</el-button>
                   </div>
                 </div>
               </el-form-item>
@@ -347,9 +340,6 @@ export default {
         deviceModel: [
           {required: true, message: '请输入设备型号', trigger: 'blur'}
         ],
-        deviceNum: [
-          {required: true, message: '请输入设备数量', trigger: 'blur'}
-        ],
         deviceCode: [
           {required: true, message: '请输入设备编号', trigger: 'blur'}
         ]
@@ -359,12 +349,12 @@ export default {
         manufacturer: '',
         deviceName: '',
         devType: '',
-        deviceNum: '',
         deviceModel: '',
         deviceCode: '',
         useCasesID: '',
         useCasesType: '',
-        projectCode: ''
+        projectCode: '',
+        deviceId: ''
       },
       paramsOptions: [],
       obj: {
@@ -372,10 +362,33 @@ export default {
         paramdown: '',
         defaultData: ''
       },
-      disabled: false
+      disabled: false,
+      deviceSelect: false,
+      deviceOptions: []
     }
   },
   created () {
+    // var deviceId = window.location.href.split('=')[1]
+    if (this.$route.query.deviceId) {
+      mylib.axios({
+        url: '/device/queryById',
+        params: {
+          id: this.$route.query.deviceId
+        }
+      }).then((res) => {
+        if (res.code == 200) {
+          this.form.manufacturer = res.data.manufacturer
+          this.form.deviceName = res.data.deviceTypeName
+          this.form.devType = res.data.devType
+          this.form.deviceModel = res.data.deviceModel
+          this.form.deviceCode = res.data.deviceCode.split(',')[0]
+          this.form.deviceId = res.data.id
+          // this.deviceSelect = true
+        } else {
+          this.$message.error(res.msg)
+        }
+      })
+    }
     if (this.$route.query.id) {
       this.id = this.$route.query.id
       const params = {id: this.$route.query.id}
@@ -454,6 +467,9 @@ export default {
     })
   },
   methods: {
+    handleCancel () {
+      history.back()
+    },
     add (arr, row, index) {
       if (!arr[index].paramId) {
         return this.$message('未选择告警项')
@@ -710,7 +726,6 @@ export default {
         })
       })
       this.disabled = true
-      console.log(this.form.useCasesID)
       if (this.id) {
         const projectInfo = {
           id: this.id,
@@ -719,8 +734,9 @@ export default {
           useCasesID: this.form.useCasesID,
           useCasesType: this.form.useCasesType,
           deviceName: this.form.deviceName,
-          deviceNum: this.form.deviceNum,
+          deviceNum: 1,
           deviceCode: this.form.deviceCode,
+          deviceId: this.form.deviceId,
           // duration: this.form.duration,
           modelId: this.form.modelId,
           deviceModel: this.form.deviceModel,
@@ -738,11 +754,13 @@ export default {
           if (res.code == '200') {
             this.$message.success(res.msg)
             if (res.projectStatus == 1) {
+              this.$emit('getMessage', '1')
               this.$router.push({
                 name: 'testing',
-                query: { projectCode: this.form.projectCode }
+                query: { projectCode: this.form.projectCode, userName: res.userName }
               })
             } else {
+              this.$emit('getMessage', '1')
               this.$router.push({
                 name: 'project'
               })
@@ -758,8 +776,9 @@ export default {
           useCasesID: this.form.useCasesID,
           useCasesType: this.label,
           deviceName: this.form.deviceName,
-          deviceNum: this.form.deviceNum,
+          deviceNum: 1,
           deviceCode: this.form.deviceCode,
+          deviceId: this.form.deviceId,
           // duration: this.form.duration,
           modelId: this.form.modelId,
           deviceModel: this.form.deviceModel,
@@ -776,11 +795,13 @@ export default {
           if (res.code == '200') {
             this.$message.success(res.msg)
             if (res.projectStatus == 1) {
+              this.$emit('getMessage', '1')
               this.$router.push({
                 name: 'testing',
-                query: { projectCode: res.projectCode }
+                query: { projectCode: res.projectCode, userName: res.userName }
               })
             } else {
+              this.$emit('getMessage', '1')
               this.$router.push({
                 name: 'project'
               })

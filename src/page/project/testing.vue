@@ -6,9 +6,9 @@
         <span style="margin-left:35px;" v-if="status == 2">测试状态：检测中</span>
         <span style="margin-left:35px;" v-if="status == 3">测试状态：已暂停</span>
         <div class="foot-btn">
-          <el-button type="warning" @click="stop" v-if="status == 2 || status == 3">终止</el-button>
-          <el-button type="warning" plain @click="pause" v-if="status == 2 || status == 3">暂停</el-button>
-          <el-button type="warning" plain @click="restart" v-if="status == 2 || status == 3">恢复测试</el-button>
+          <el-button type="warning" @click="stop" v-if="(status == 2 || status == 3) && authority">终止</el-button>
+          <el-button type="warning" plain @click="pause" v-if="(status == 2 || status == 3) && authority">暂停</el-button>
+          <el-button type="warning" plain @click="restart" v-if="(status == 2 || status == 3) && authority">恢复测试</el-button>
           <el-button type="warning" plain @click="handleClick">返回</el-button>
         </div>
       </div>
@@ -145,7 +145,8 @@ export default {
       projectCode: '',
       logArr: [],
       status: 2,
-      isStop: false
+      isStop: false,
+      authority: true
     }
   },
   methods: {
@@ -300,6 +301,9 @@ export default {
     this.projectCode = this.$route.query.projectCode
     this.getParam()
     this.WebSocketSet()
+    if (this.$route.query.userName != sessionStorage.getItem('userName')) {
+      this.authority = false
+    }
   }
 }
 </script>

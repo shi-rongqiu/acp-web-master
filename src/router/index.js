@@ -7,6 +7,7 @@ import project from '@/page/project/project'
 import useCase from '@/page/use/useCase'
 import model from '@/page/model/model'
 import network from '@/page/network'
+import device from '@/page/device/device'
 import seeDetails from '@/page/use/seeDetails'
 import modelDetails from '@/page/model/modelDetails'
 import projectCreate from '@/page/project/projectCreate'
@@ -18,6 +19,7 @@ import addGroup from '../page/use/addGroup'
 import editGroup from '../page/use/editGroup'
 import addExample from '../page/nouse/addExample'
 import editExample from '../page/nouse/editExample'
+import addDevice from '../page/device/addDevice'
 import system from '../page/system/system'
 import userManage from '../page/system/user'
 import addUser from '../page/system/addUser'
@@ -63,6 +65,8 @@ export default new Router({
         { name: 'editGroup', path: 'editGroup', component: editGroup },
         { name: 'addExample', path: 'addExample', component: addExample },
         { name: 'editExample', path: 'editExample', component: editExample },
+        { name: 'device', path: 'device', component: device },
+        { name: 'addDevice', path: 'addDevice', component: addDevice },
         { name: 'system', path: 'system', component: system },
         { name: 'user', path: 'userManage', component: userManage },
         { name: 'addUser', path: 'addUser', component: addUser },

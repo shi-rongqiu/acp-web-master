@@ -12,7 +12,7 @@ module.exports = {
     assetsPublicPath: '/',
     proxyTable: {
       '/api': {
-        target: 'http://192.168.0.102:8989/acp', // 'http://52run.waview.com.cn:8081', //  // 后端接口地址
+        target: 'http://192.168.0.115:8081', // 'http://52run.waview.com.cn:8081', //  // 后端接口地址
         changeOrigin: true,//是否允许跨越
         pathRewrite: {
           '^/api': '',//重写,

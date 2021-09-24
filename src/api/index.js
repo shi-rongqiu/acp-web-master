@@ -1,14 +1,14 @@
 import fetch from '@/util/fetch'
 import Qs from 'qs'
-let root = '/api' // 'http://36p80a2352.zicp.vip:12713' 'http://192.168.0.183:8081'
+// let root = '/api' // 'http://36p80a2352.zicp.vip:12713' 'http://192.168.0.183:8081'
 
 
-// let str = window.location.href.split('#')[0]
-// let root = str.substring(0, str.length - 1) + '/acp'
-// let URL = str.substring(6, str.length - 1) + '/acp'
+let str = window.location.href.split('#')[0]
+let root = str.substring(0, str.length - 1) + '/acp'
+let URL = str.substring(6, str.length - 1) + '/acp'
 
 
-let URL = '192.168.0.102:8081' // 'http://36p80a2352.zicp.vip:12713' // 'http://52run.waview.com.cn:8081' //
+// let URL = '192.168.0.107:8081' // 'http://36p80a2352.zicp.vip:12713' // 'http://52run.waview.com.cn:8081' //
 export default {
   URL: URL,
   root: root,
