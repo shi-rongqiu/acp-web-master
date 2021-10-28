@@ -214,7 +214,7 @@ export default {
     float: left;
     margin-left: 15px;
     margin-top: 26px;
-    width: 346px;
+    width: 260px;
     height: 43px;
     background-image: url(../assets/image/logo3.png);
     background-repeat: no-repeat;

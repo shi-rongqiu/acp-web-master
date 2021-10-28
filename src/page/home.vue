@@ -99,7 +99,7 @@ export default {
 .bg {
     display: inline-block;
     width: 396px;
-    height: 136px;
+    height: 84px;
     background-image: url(../assets/image/logo2.png);
     background-repeat: no-repeat;
     background-size: 100% 100%;

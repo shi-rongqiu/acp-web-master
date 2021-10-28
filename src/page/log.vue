@@ -138,10 +138,10 @@ export default {
 }
 .img {
     width: 286px;
-    height: 109px;
+    height: 62px;
     float: left;
     margin-left: 125px;
-    margin-top: 180px;
+    margin-top: 200px;
 }
 .login {
     float: left;

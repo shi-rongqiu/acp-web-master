@@ -8,7 +8,7 @@ let root = str.substring(0, str.length - 1) + '/acp'
 let URL = str.substring(6, str.length - 1) + '/acp'
 
 
-// let URL = '192.168.0.107:8081' // 'http://36p80a2352.zicp.vip:12713' // 'http://52run.waview.com.cn:8081' //
+// let URL = '192.168.0.111:8989/acp' // 'http://36p80a2352.zicp.vip:12713' // 'http://52run.waview.com.cn:8081' //
 export default {
   URL: URL,
   root: root,
