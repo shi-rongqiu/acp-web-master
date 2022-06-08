@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="10px" height="12px" viewBox="0 0 10 12" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>路径</title>
+    <g id="页面-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="项目管理-测试进度" transform="translate(-1069.000000, -501.000000)" fill="#FFA300" fill-rule="nonzero">
+            <path d="M1076.33435,505.689818 L1078.99943,505.689818 L1074.33647,501.037896 L1069.67532,505.689818 L1072.40585,505.689818 C1072.40585,509.01185 1071.33966,511.338316 1069.01004,512.998905 C1072.33859,512.335177 1075.66897,510.341533 1076.33435,505.689818" id="路径" transform="translate(1074.004738, 507.018400) scale(1, -1) translate(-1074.004738, -507.018400) "></path>
+        </g>
+    </g>
+</svg>

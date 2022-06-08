@@ -1,0 +1,671 @@
+<template>
+  <div class="container">
+    <div class="container-left">
+      <div class="title">
+        <span>公司：{{manufacturer}}</span><span style="margin-left:35px;">被测设备：{{deviceName}}</span>
+        <span style="margin-left:35px;" v-if="status == 2">测试状态：检测中</span>
+        <div class="foot-btn">
+          <el-button type="warning" @click="stop" v-if="(status == 2 || status == 3) && authority">终止</el-button>
+          <el-button type="warning" plain @click="handleClick">返回</el-button>
+        </div>
+      </div>
+      <div class="content-continer">
+        <div v-for="(item, index) in data" :key="item.id">
+          <div v-if="item.processStatus == 0" class="content wait">
+            <div>
+              <p>{{item.processName}}</p>
+              <p><span>{{item.useCasesCode}}</span>
+                <span class="type-style" v-if="item.processType == 0">MAC层</span>
+                <span class="type-style" v-if="item.processType == 1">net网络层</span>
+                <span class="type-style" v-if="item.processType == 2">bus业务层</span>
+              </p>
+            </div>
+            <div class="foot-content">
+              <span class="foot"><img src="../../assets/image/wait-icon.svg" alt="">等待中</span>
+              <span class="startBtn" :class="{'foot':hasTest == 1}" @click="startDetection(item.useCasesCode, index)"><img src="../../assets/image/start-icon.svg" alt="">开始检测</span>
+            </div>
+          </div>
+          <div v-if="item.processStatus == 1" class="content pass" @mouseenter="handleRemark(index, 1)" @mouseleave="handleRemark(index, 2)">
+            <div>
+              <p>{{item.processName}}</p>
+              <p>
+                <span>{{item.useCasesCode}}</span>
+                <span class="type-style" v-if="item.processType == 0">MAC层</span>
+                <span class="type-style" v-if="item.processType == 1">net网络层</span>
+                <span class="type-style" v-if="item.processType == 2">bus业务层</span>
+                <span>用时：{{item.time}}</span>
+              </p>
+            </div>
+            <div class="foot-content">
+              <img src="../../assets/image/success-icon.svg" alt="">检测通过</div>
+            <div class="mask" v-if="item.showRemark"><div>备注信息：{{item.remark}}</div></div>
+          </div>
+          <div v-if="item.processStatus == 2" class="content testing">
+            <div>
+              <p>{{item.processName}}</p>
+              <p>
+                <span>{{item.useCasesCode}}</span>
+                <span class="type-style" v-if="item.processType == 0">MAC层</span>
+                <span class="type-style" v-if="item.processType == 1">net网络层</span>
+                <span class="type-style" v-if="item.processType == 2">bus业务层</span>
+                <span>用时：{{item.time}}</span>
+              </p>
+            </div>
+            <div class="foot-content">
+              <img src="../../assets/image/jianing-icon.svg" class="loading" alt="">检测中
+              <span class="endBtn" @click="endTest(item.useCasesCode)"><img src="../../assets/image/end-icon.svg" alt="">结束测试</span>
+            </div>
+          </div>
+          <div v-if="item.processStatus == 3" class="content nopass" @mouseenter="handleRemark(index, 1)" @mouseleave="handleRemark(index, 2)">
+            <div>
+              <p>{{item.processName}}</p>
+              <p>
+                <span>{{item.useCasesCode}}</span>
+                <span class="type-style" v-if="item.processType == 0">MAC层</span>
+                <span class="type-style" v-if="item.processType == 1">net网络层</span>
+                <span class="type-style" v-if="item.processType == 2">bus业务层</span>
+                <span>用时：{{item.time}}</span>
+              </p>
+            </div>
+            <div class="foot-content"><img src="../../assets/image/nosuccess-icon.svg" alt="">检测不通过</div>
+            <div class="mask" v-if="item.showRemark"><div>备注信息：{{item.remark}}</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="container-right">
+      <p class="right-title">测试进程：</p>
+      <div>
+        <div v-for="(item, index) in logArr" :key="index">
+          <div>
+            <p class="content-title">
+              <span v-if="item.result == 0"><img src="../../assets/image/wait-icon.svg" alt=""></span>
+              <span v-if="item.result == 1"><img src="../../assets/image/success-icon.svg" alt=""></span>
+              <span v-if="item.result == 2"><img class="loading" src="../../assets/image/jianing-icon.svg" alt=""></span>
+              <span v-if="item.result == 3"><img src="../../assets/image/nosuccess-icon.svg" alt=""></span>{{item.processName}}
+            </p>
+            <div class="report">
+              <p v-for="(cell, ind) in item.listTestDatas" :key="ind">
+                <img v-if="cell.direction == 1" src="../../assets/image/up.svg" alt="">
+                <img v-if="cell.direction == 2" src="../../assets/image/down.svg" alt="">
+                {{cell.record}}
+              </p>
+              <p v-if="item.result == 3" class="error-tip">{{item.rstDescibe}}</p>
+            </div>
+          </div>
+        </div>
+        <el-divider content-position="center" v-if="status == 1 || status == 0">{{status == 0 ? '不合格' : status == 1 ? '合格' : ''}}</el-divider>
+      </div>
+    </div>
+    <el-dialog
+      :visible.sync='dialogVisible'
+      width='30%'
+      top='20%'
+      @close="close"
+      center
+      title="测试结果"
+    >
+      <div>
+        <div style="text-align: left;">测试结果：
+          <el-radio-group v-model="testResult">
+            <el-radio :label="1">通过</el-radio>
+            <el-radio :label="3">不通过</el-radio>
+          </el-radio-group>
+        </div>
+        <div style="margin:20px 0;">
+          <el-input v-model="remark" type="textarea" :rows="6" placeholder="备注信息"></el-input>
+        </div>
+      </div>
+      <span>
+        <el-button type='warning' @click='confirm' :disabled="disabled">确 定</el-button>
+        <el-button @click='close' type='warning' plain>取 消</el-button>
+      </span>
+    </el-dialog>
+  </div>
+</template>
+
+<script>
+import mylib from '../../api/index'
+export default {
+  name: 'testing',
+  data () {
+    return {
+      websock: null, // websocket
+      data: [],
+      manufacturer: '',
+      deviceName: '',
+      projectCode: '',
+      logArr: [],
+      status: 2,
+      isStop: false,
+      authority: true,
+      show: false,
+      obj: {},
+      imgUrl: [],
+      hasTest: 0, // 节点手动测试结果
+      dialogVisible: false,
+      useCasesCode: '',
+      testResult: 1,
+      remark: '',
+      disabled: false
+    }
+  },
+  methods: {
+    handleRemark (index, type) {
+      var obj = this.data[index]
+      if (type == 1) {
+        obj.showRemark = true
+      } else {
+        obj.showRemark = false
+      }
+      this.$set(this.data, index, obj)
+    },
+    getParam () {
+      const params = {projectCode: this.projectCode}
+      mylib.axios({
+        url: '/project/queryProcess',
+        params: params
+      }).then((res) => {
+        if (res.code == 200) {
+          this.data = res.data.processList
+          this.data.forEach((el) => {
+            el.showRemark = false
+          })
+          this.hasTest = sessionStorage.getItem('hasTest') || 0
+          this.logArr = res.data.resultList
+          this.logArr.forEach((el) => {
+            if (el.listTestDatas && el.listTestDatas.length > 0) {
+              el.listTestDatas.forEach((al, index) => {
+                if (!al.record) {
+                  el.listTestDatas.splice(index, 1)
+                }
+              })
+            }
+          })
+          this.status = res.data.status
+          this.manufacturer = res.data.manufacturer
+          this.deviceName = res.data.deviceName
+        } else {
+          this.$message.error(res.msg)
+        }
+      })
+    },
+    stop () {
+      mylib.axios({
+        url: '/project/projectStop',
+        params: {
+          projectCode: this.projectCode
+        }
+      }).then((res) => {
+        if (res.code == 200) {
+          this.$message.success(res.msg)
+          this.$router.push({
+            path: '/index'
+          })
+        } else {
+          this.$message.error(res.msg)
+        }
+      })
+    },
+    handleClick () {
+      this.$router.push({
+        path: '/index'
+      })
+    },
+    startDetection (code, index) {
+      if (this.hasTest == 0) {
+        mylib.axios({
+          url: '/project/checkPreCaseIfSucc',
+          params: {
+            projectCode: this.projectCode,
+            useCasesCode: code
+          }
+        }).then((res) => {
+          if (res.code == 200) {
+            mylib.axios({
+              url: '/project/excuteCase',
+              params: {
+                projectCode: this.projectCode,
+                useCasesCode: code
+              }
+            }).then((res) => {
+              if (res.code == 200) {
+                this.$message.success(res.msg)
+                sessionStorage.setItem('hasTest', 1)
+                this.hasTest = 1
+                var obj = this.data[index]
+                obj.processStatus = 2
+                this.$set(this.data, index, obj)
+                this.WebSocketSet()
+              } else if (res.code == 500) {
+                this.$message.error('用例配置参数为空')
+              } else if (res.code == 501) {
+                this.$message.error('任务下发失败')
+              }
+            })
+          } else {
+            this.$message.error('前置用例' + res.preTestcase + '执行未成功')
+          }
+        })
+      }
+    },
+    endTest (code) {
+      this.dialogVisible = true
+      this.useCasesCode = code
+    },
+    close () {
+      this.dialogVisible = false
+    },
+    confirm () {
+      this.disabled = true
+      mylib.axios({
+        url: '/project/remarkProjectCaseStatus',
+        params: {
+          projectCode: this.projectCode,
+          useCasesCode: this.useCasesCode,
+          result: this.testResult,
+          remark: this.remark
+        }
+      }).then((res) => {
+        if (res.code == 200) {
+          this.dialogVisible = false
+          this.$message.success(res.msg)
+          this.getParam()
+          sessionStorage.setItem('hasTest', 0)
+          this.hasTest = 0
+          this.websock.close()
+        } else {
+          this.$message.error(res.msg)
+        }
+        this.disabled = false
+      })
+    },
+    // websocket获取数据
+    WebSocketSet () {
+      if ('WebSocket' in window) {
+        const wsuri = 'ws://' + mylib.URL + '/websocket/' + sessionStorage.getItem('userName')
+        this.websock = new WebSocket(wsuri)
+        this.websock.onmessage = (res => {
+          let rst = JSON.parse(res.data)
+          console.log(rst)
+          if ((rst.type == 1 || rst.type == 2 || rst.type == 4) && rst.data.projectCode == this.projectCode) {
+            if (rst.type == 1 || rst.type == 2) {
+              this.data.forEach((el, index) => {
+                el.showRemark = false
+                if (el.useCasesCode == rst.data.useCasesCode) {
+                  el.processStatus = rst.data.processStatus
+                  el.time = rst.data.time
+                  if (rst.type == 1 && index < this.data.length - 1 && !this.isStop) {
+                    this.data[index + 1].processStatus = 2
+                  }
+                }
+              })
+            }
+            // 下一个用例开始测试
+            if (rst.type == 2) {
+              if (this.logArr.length > 0) {
+                if (this.logArr[this.logArr.length - 1].useCasesCode != rst.data.useCasesCode) {
+                  this.logArr.push({
+                    result: rst.data.processStatus,
+                    useCasesCode: rst.data.useCasesCode,
+                    processName: rst.data.processName,
+                    projectCode: rst.data.projectCode,
+                    listTestDatas: [],
+                    rstDescibe: ''
+                  })
+                }
+              } else {
+                this.logArr.push({
+                  result: rst.data.processStatus,
+                  useCasesCode: rst.data.useCasesCode,
+                  processName: rst.data.processName,
+                  projectCode: rst.data.projectCode,
+                  listTestDatas: [],
+                  rstDescibe: ''
+                })
+              }
+            }
+            // 用例测试结束
+            if (rst.type == 1) {
+              this.status = rst.status
+              this.logArr.forEach((el) => {
+                if (el.useCasesCode == rst.data.useCasesCode) {
+                  el.result = rst.data.processStatus
+                  el.rstDescibe = rst.data.rstDescibe
+                }
+              })
+            }
+            // if (rst.type == 4) {
+            //   this.$router.push({
+            //     path: '/index'
+            //   })
+            // }
+          }
+          // 用例的上下行数据
+          if (rst.type == 3 && rst.data[0].projectCode == this.projectCode) {
+            rst.data.forEach((el) => {
+              this.logArr[this.logArr.length - 1].listTestDatas.push(el)
+            })
+          }
+        })
+        this.websock.onopen = (res => {
+          console.log('socket连接成功')
+        })
+        // this.websock.send('连接中')
+        this.websock.onclose = (res => {
+          console.log('socket已关闭')
+        })
+      } else {
+        alert('当前浏览器 Not support websocket')
+      }
+    }
+  },
+  // destroyed () {
+  //   this.websock.close()
+  // },
+  mounted () {
+  },
+  created () {
+    this.projectCode = this.$route.query.projectCode
+    this.getParam()
+    if (this.$route.query.userName != sessionStorage.getItem('userName')) {
+      this.authority = false
+    }
+  }
+}
+</script>
+
+<style scoped>
+.container{
+  display:flex;
+  justify-content: space-between;
+  background:#f5f7fa;
+}
+.container-left{
+  width:calc(100% - 470px);
+  padding: 27px 45px;
+  background: #fff;
+  box-sizing: border-box;
+}
+.container-right{
+  width: 460px;
+  padding:10px;
+  box-sizing: border-box;
+  background: #fff;
+  height:100%;
+}
+.container-right>div{
+  border: 1px solid #c8cfda;
+  border-radius: 8px;
+  padding:15px;
+  height:calc(100% - 50px);
+  box-sizing: border-box;
+  overflow: auto;
+  font-size:12px;
+}
+.right-title{
+  font-size: 14px;
+  font-weight: bold;
+}
+.content-title{
+  font-size: 12px;
+  font-weight: bold;
+}
+.content-text{
+  padding-left:12px;
+}
+  .title{
+    font-size:14px;
+    font-weight: bold;
+    color:#000;
+    height:35px;
+    line-height:35px;
+  }
+.content-continer{
+  display:flex;
+  margin-top:20px;
+  overflow: auto;
+  flex-wrap: wrap;
+}
+  .content{
+    width:210px;
+    margin-right:20px;
+    border-radius: 4px;
+    font-size:12px;
+    margin-bottom:10px;
+    position:relative;
+    overflow: hidden;
+  }
+
+  .content p{
+    margin:0;
+  }
+  .content>div{
+    padding-left:10px;
+  }
+.mask{
+  width:100%;
+  height:100%;
+  padding:0 20px !important;
+  box-sizing: border-box;
+  display: flex;
+  position: absolute;
+  top:0;
+  left:0;
+  background: rgba(0,0,0,0.5);
+  color:#fff;
+  align-items: center;
+}
+  .content>div:first-child{
+    height:60px;
+    padding-top:10px;
+    box-sizing: border-box;
+  }
+  .content>div:first-child>p:first-child{
+    font-weight: bold;
+    margin-bottom: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .content>div>p:last-child{
+    opacity: 0.8;
+  }
+  .wait{
+    border:1px dashed #cbd4e1;
+    background: rgba(203, 212, 225, 0.1);
+  }
+  img{
+    margin-right:5px;
+    vertical-align: middle;
+  }
+  .foot-content{
+    border-top:1px dashed #cbd4e1;
+    line-height:30px;
+  }
+  .testing{
+    border:1px dashed #007aff;
+    background: #f4f9ff;
+    color:#007aff;
+  }
+
+  .wait .foot-content .startBtn{
+    float: right;
+    margin-right:10px;
+    color:#007aff;
+    opacity: 1;
+    cursor: pointer;
+  }
+  .wait .foot{
+    opacity: 0.35;
+  }
+  .wait .startBtn.foot{
+    opacity: 0.35;
+  }
+  .wait .foot-content .startBtn img{
+    margin-top:-2px;
+  }
+  .testing .foot-content{
+    border-top-color: #007aff;
+  }
+  .endBtn{
+    float: right;
+    margin-right:10px;
+    color:#ff5100;
+    cursor: pointer;
+  }
+  .nopass{
+    border:1px solid #ff0a0a;
+    background: #fff7f7;
+    color:#ff0a0a;
+  }
+  .nopass .foot-content{
+    border-top:1px solid #ff0a0a;
+  }
+  .pass{
+    border:1px solid #2ebd2b;
+    background: #2ebd2b;
+    color:#fff;
+  }
+  .pass .foot-content{
+    border-color: #2ebd2b;
+    background:#efffef;
+    color:#2ebd2b;
+  }
+  .foot-btn{
+    float:right;
+    margin-top:0;
+  }
+  .type-style{
+    margin:0 10px;
+  }
+  .report{
+    padding-left:16px;
+    padding-right:10px;
+    box-sizing: border-box;
+  }
+  .report>p{
+    word-break: break-all;
+  }
+  .error-tip{
+    background:#ffefef;
+    color:#ff2626;
+    font-size:12px;
+    height:20px;
+    line-height:20px;
+    border-radius: 10px;
+    margin-left:16px;
+    padding-left:15px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .loading{
+    transform-origin: center center;
+    animation: sz 1s 1s linear infinite;
+  }
+  @keyframes sz {
+    from {
+      transform: rotateZ(0deg);
+    }
+    to {
+      transform: rotateZ(360deg);
+    }
+  }
+  .title-icon-success,.title-icon-nosuccess{
+    display:inline-block;
+    width:75px;
+    height:20px;
+    text-align:center;
+    line-height:20px;
+    border-radius: 10px;
+    font-size:12px;
+    cursor: pointer;
+  }
+.title-icon-success svg,.title-icon-nosuccess svg{
+  float:left;
+  margin-left:10px;
+  margin-top:3px;
+  margin-right:0;
+}
+.title-icon-success{
+  background: rgba(46, 189, 43, 0.08);
+  color:#2ebd2b;
+}
+.title-icon-nosuccess{
+  background:  rgba(255, 10, 10, 0.08);
+  color:#ff0a0a;
+}
+.chart-title{
+  width:100%;
+  height:45px;
+  background: #e8ecf3;
+  text-align:center;
+  font-weight:bold;
+  line-height:45px;
+}
+.chart-container{
+  display:flex;
+  margin-left:20px;
+  /*width:60%;*/
+  /*margin:30px auto;*/
+  /*padding-bottom:50px;*/
+}
+.column{
+  width:40px;
+  padding:30px 10px;
+  box-sizing: border-box;
+  font-weight:bold;
+  writing-mode:vertical-lr;
+  text-align: center;
+  border:1px solid #eee;
+}
+  .column1{
+    color:#007aff;
+    border-color: #007aff;
+    background:rgba(13,128,255,0.08)
+  }
+.column2{
+  color:#ff5100;
+  border-color: #ff5100;
+  background:rgba(255,81,0,0.08)
+}
+  .line{
+    width:260px;
+    border-top:2px solid #2ebd2b;
+    height:0;
+    margin-top:5.5px;
+  }
+  .arrow{
+    border: 6px solid transparent;
+    border-left-color:#2ebd2b;
+    width:0;
+    height:0;
+    margin-right:-6px;
+  }
+  .arrow1{
+    border: 6px solid transparent;
+    border-right-color:#2ebd2b;
+    width:0;
+    height:0;
+    margin-left:-6px;
+  }
+  .column-text{
+    width:260px;
+    padding:10px 10px 5px;
+    font-size:13px;
+    box-sizing: border-box;
+    word-break: break-all;
+  }
+  .close{
+    position: absolute;
+    bottom:-80px;
+    width:100%;
+    text-align:center;
+  }
+  .close img{
+    width:30px;
+    height:30px;
+    cursor: pointer;
+  }
+</style>

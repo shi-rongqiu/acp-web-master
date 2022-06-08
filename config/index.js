@@ -12,7 +12,7 @@ module.exports = {
     assetsPublicPath: '/',
     proxyTable: {
       '/api': {
-        target: 'http://192.168.0.111:8989/acp', // 'http://52run.waview.com.cn:8081', //  // 后端接口地址
+        target: 'http://192.168.7.134:8080', // 'http://192.168.7.113:8989/acp', // 'http://192.168.0.158:8080', //  'http://52run.waview.com.cn:8081', //  // 后端接口地址
         changeOrigin: true,//是否允许跨越
         pathRewrite: {
           '^/api': '',//重写,
@@ -53,10 +53,10 @@ module.exports = {
 
   build: {
     // Template for index.html
-    index: path.resolve(__dirname, '../../acp-web-common/index.html'),
+    index: path.resolve(__dirname, '../../acp-web/index.html'),
 
     // Paths
-    assetsRoot: path.resolve(__dirname, '../../acp-web-common'),
+    assetsRoot: path.resolve(__dirname, '../../acp-web'),
     assetsSubDirectory: 'static',
     assetsPublicPath: '/',
 

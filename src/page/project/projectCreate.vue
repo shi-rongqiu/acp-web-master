@@ -8,7 +8,7 @@
                 <el-step title='创建项目'></el-step>
                 <el-step title='配置测试项'></el-step>
                 <el-step title='确认模型'></el-step>
-                <el-step title='配置网络拓扑'></el-step>
+                <el-step title='配置网络拓扑' v-if="form.devType == 0 || form.devType == 2"></el-step>
                 <el-step title='完成'></el-step>
             </el-steps>
         </div>
@@ -21,7 +21,7 @@
                     <el-input v-model='form.manufacturer'></el-input>
                 </el-form-item>
               <el-form-item label='被测类型：' prop="devType">
-                 <el-select v-model="form.devType" style="width:100%;" placeholder="">
+                 <el-select v-model="form.devType" style="width:100%;" placeholder="" @change="handleChart">
                     <el-option label="微功率传感器" :value="0"></el-option>
                     <el-option label="汇聚节点" :value="1"></el-option>
                     <el-option label="低功率传感器" :value="2"></el-option>
@@ -58,8 +58,7 @@
 
                     />
                   </el-select>
-                    </el-form-item
-                >
+              </el-form-item>
               <el-form-item label='设备名称：' prop="deviceName">
                     <el-input
                         v-model='form.deviceName'
@@ -72,6 +71,25 @@
               <el-form-item label='设备编号：' prop="deviceCode">
                    <el-input v-model='form.deviceCode'></el-input>
                 </el-form-item>
+              <el-form-item v-if="form.devType == 1 || form.devType == 3" label='传感器编号：' prop="sensorCode">
+                <el-input v-model='form.sensorCode'></el-input>
+              </el-form-item>
+              <el-form-item label='业务周期：' prop="busCycle" v-if="form.devType === 0 || form.devType == 2">
+                <el-input v-model='form.busCycle'>
+                  <span slot="suffix">（单位：{{form.devType == 2 ? 's' : 'ms'}}）</span>
+                </el-input>
+              </el-form-item>
+              <el-form-item label='控制周期：' prop="ctrlCycle" v-if="form.devType === 0">
+                <el-input v-model='form.ctrlCycle'>
+                  <span slot="suffix">（单位：/业务周期）</span>
+                </el-input>
+              </el-form-item>
+              <el-form-item label='规约：' prop="protocolType" v-if="form.devType == 1 || form.devType == 3">
+                <el-select v-model="form.protocolType" style="width:100%;" placeholder="" @change="handleChart">
+                  <el-option label="0531版本" :value="1"></el-option>
+                  <el-option label="0618版本" :value="2"></el-option>
+                </el-select>
+              </el-form-item>
 
 <!--                <el-form-item label='有效时长：' prop="duration">-->
 <!--                    <el-select v-model='form.duration' placeholder='' style="width:100%;">-->
@@ -82,9 +100,8 @@
               <el-form-item>
                 <div class="footer">
                   <div class='foots'>
-                    <el-button type='warning' class='next' @click="next1('form')">下一步</el-button>
-
                     <el-button type='warning' plain class='clear' @click="handleCancel">取消</el-button>
+                    <el-button type='warning' class='next' @click="next1('form')">下一步</el-button>
                   </div>
                 </div>
               </el-form-item>
@@ -115,14 +132,14 @@
                   </el-table-column>
                   <el-table-column label="输入参数" width="120">
                     <template slot-scope="scope">
-                      <div class="paramsContent" :class="{'haveCase': scope.row.caseClassify != 0}" v-for="(item, index) in scope.row.listGroupParam" :key="index">
+                      <div class="paramsContent" :class="{'haveCase': scope.row.caseClassify != 0}" v-for="(item, index) in scope.row.listGroupParam" :key="index" v-if="item.showFalg == 1 || scope.row.useCasesType != 1">
                         <div>
                           <el-select placeholder="" v-if="scope.row.caseClassify != 0" v-model="item.paramId" @change="handleGet($event, scope.$index, index)">
                             <el-option v-for="(item, index) in paramsOptions" :key="index" :value="item.paramId" :label="item.param"></el-option>
                           </el-select>
                           <span v-else>{{item.param}}</span>
                         </div>
-                        <div>{{item.paramCode}}</div>
+                        <!--                <div>{{item.paramCode}}</div>-->
                         <div>
                           <div v-if="scope.row.caseClassify == 2">
                             <el-input type="text" v-model="item.paramup"></el-input>
@@ -154,10 +171,6 @@
                             <span v-if="item.paramType == 1">上限值</span>
                           </div>
                         </div>
-                        <div>
-                          <el-input v-if="scope.row.caseClassify != 0 && index == 0" v-model="scope.row.timeout"></el-input>
-                          <span v-if="scope.row.caseClassify == 0 && index == 0">{{scope.row.timeout}}</span>
-                        </div>
                         <div class="params-btn" v-if="scope.row.caseClassify == 2">
                           <i class="el-icon-remove-outline" v-if="scope.row.listGroupParam.length > 1" @click="handleDel(scope.row.listGroupParam, index)"></i>
                           <i class="el-icon-circle-plus-outline" @click="add(scope.row.listGroupParam, scope.row, index)" v-if="index == (scope.row.listGroupParam.length - 1)"></i>
@@ -165,10 +178,10 @@
                       </div>
                     </template>
                   </el-table-column>
-                  <el-table-column label="参数编号" width="80">
-                    <template slot-scope="scope">
-                    </template>
-                  </el-table-column>
+<!--                  <el-table-column label="参数编号" width="80">-->
+<!--                    <template slot-scope="scope">-->
+<!--                    </template>-->
+<!--                  </el-table-column>-->
                   <el-table-column label="参数值" width="80">
                     <template slot-scope="scope">
                     </template>
@@ -177,11 +190,7 @@
                     <template slot-scope="scope">
                     </template>
                   </el-table-column>
-                  <el-table-column label="参量类型" width="80">
-                    <template slot-scope="scope">
-                    </template>
-                  </el-table-column>
-                  <el-table-column prop="timeout" label="超时" width="170">
+                  <el-table-column label="参量类型" width="170">
                     <template slot-scope="scope">
                     </template>
                   </el-table-column>
@@ -189,16 +198,16 @@
             </div>
             <div class='footer'>
                 <div class='foots'>
+                  <el-button
+                    type='warning'
+                    plain
+                    class='clear'
+                    @click='before'>上一步</el-button>
                     <el-button type='warning' class='next' @click='next'>下一步</el-button>
-                    <el-button
-                        type='warning'
-                        plain
-                        class='clear'
-                        @click='before'>上一步</el-button>
                 </div>
             </div>
         </div>
-        <div class='lists' v-if='active == 2'>
+        <div class='lists' v-if='active == 2 || (form.devType % 2 == 1 && active == 3)'>
             <div class='table'>
               <el-table :data='tableData' style='width: 100%' border stripe>
                 <el-table-column label="参量名称（中文）" prop="paramNameCh" width="180">
@@ -248,16 +257,17 @@
 
             <div class='footer'>
                 <div class='foots'>
-                    <el-button type='warning' class='next' @click='next2'>下一步</el-button>
-                    <el-button
-                        type='warning'
-                        plain
-                        class='clear'
-                        @click='before'>上一步</el-button>
+                  <el-button
+                    type='warning'
+                    plain
+                    class='clear'
+                    @click='before'>上一步</el-button>
+                    <el-button v-if="form.devType % 2 == 1" type='warning' class='next' @click='next2(1)'>完成</el-button>
+                    <el-button v-else type='warning' class='next' @click='next2(2)'>下一步</el-button>
                 </div>
             </div>
         </div>
-        <div v-if='active == 3 || active == 4'>
+        <div v-if='(active == 3 || active == 4) && (form.devType % 2 == 0)'>
          <net-tree :devType="form.devType" @getActive="handleActive" @showDia="handleDia"></net-tree>
         </div>
         <el-dialog
@@ -320,10 +330,10 @@ export default {
       ],
       rules: {
         projectName: [
-          {required: true, message: '请输入项目名称', trigger: 'blur'}
+          {required: true, message: '项目名称为空', trigger: 'blur'}
         ],
         manufacturer: [
-          {required: true, message: '请输入厂家名称', trigger: 'blur'}
+          {required: true, message: '厂家名称为空', trigger: 'blur'}
         ],
         devType: [
           {required: true, message: '请选择被测类型', trigger: 'change'}
@@ -335,13 +345,19 @@ export default {
           {required: true, message: '请选择设备模型', trigger: 'change'}
         ],
         deviceName: [
-          {required: true, message: '请输入设备名称', trigger: 'blur'}
+          {required: true, message: '设备名称为空', trigger: 'blur'}
         ],
         deviceModel: [
-          {required: true, message: '请输入设备型号', trigger: 'blur'}
+          {required: true, message: '设备型号为空', trigger: 'blur'}
         ],
         deviceCode: [
-          {required: true, message: '请输入设备编号', trigger: 'blur'}
+          {required: true, message: '设备编号为空', trigger: 'blur'}
+        ],
+        busCycle: [
+          {required: true, message: '请输入业务周期', trigger: 'blur'}
+        ],
+        ctrlCycle: [
+          {required: true, message: '请输入控制周期', trigger: 'blur'}
         ]
       },
       form: {
@@ -354,7 +370,12 @@ export default {
         useCasesID: '',
         useCasesType: '',
         projectCode: '',
-        deviceId: ''
+        deviceId: '',
+        busCycle: '20000',
+        ctrlCycle: '4',
+        protocolType: 1,
+        sensorCode: '',
+        taskId: ''
       },
       paramsOptions: [],
       obj: {
@@ -383,6 +404,7 @@ export default {
           this.form.deviceModel = res.data.deviceModel
           this.form.deviceCode = res.data.deviceCode.split(',')[0]
           this.form.deviceId = res.data.id
+          this.form.protocolType = res.data.protocolType
           // this.deviceSelect = true
         } else {
           this.$message.error(res.msg)
@@ -410,7 +432,8 @@ export default {
                     paramdown: cl.paramType == -1 ? cl.defaultData : al.defaultData,
                     paramCode: cl.paramCode,
                     paramUnit: cl.paramUnit,
-                    paramType: cl.paramType
+                    paramType: cl.paramType,
+                    showFalg: cl.showFalg
                   })
                 }
               })
@@ -422,7 +445,6 @@ export default {
             useCasesName: el.processName,
             useCasesType: el.processType,
             priority: el.priority,
-            timeout: el.timeOut,
             listGroupParam: el.proConfigParamList,
             caseClassify: el.caseClassify,
             useCasesStatus: el.processStatus
@@ -469,6 +491,15 @@ export default {
   methods: {
     handleCancel () {
       history.back()
+    },
+    handleChart () {
+      if (this.form.devType == 2) {
+        this.form.busCycle = '45'
+        this.form.ctrlCycle = null
+      } else {
+        this.form.busCycle = '20000'
+        this.form.ctrlCycle = '4'
+      }
     },
     add (arr, row, index) {
       if (!arr[index].paramId) {
@@ -536,20 +567,7 @@ export default {
               }
             })
           }
-          if (!el.timeout) {
-            this.optionData.push({
-              listGroupParam: el.listGroupParam,
-              timeout: '',
-              caseClassify: el.caseClassify,
-              useCasesName: el.useCasesName,
-              useCasesStatus: el.useCasesStatus,
-              useCasesType: el.useCasesType,
-              useCasesCode: el.useCasesCode,
-              priority: el.priority
-            })
-          } else {
-            this.optionData.push(el)
-          }
+          this.optionData.push(el)
         })
         this.obj = {
           paramup: '',
@@ -612,9 +630,6 @@ export default {
               }
             }
           }
-          if (!el.timeout) {
-            return this.$message('超时时间为空')
-          }
         }
         if (el.caseClassify == 1) {
           if (!el.listGroupParam[0].paramId) {
@@ -622,15 +637,15 @@ export default {
           } else if (!el.listGroupParam[0].defaultData) {
             return this.$message('当前值为空')
           }
-          if (!el.timeout) {
-            return this.$message('超时时间为空')
-          }
         }
       }
       this.active++
     },
-    next2 () {
+    next2 (val) {
       this.active = 3
+      if (val == 1) {
+        this.dialogVisible = true
+      }
     },
     selectChange () {
       this.click()
@@ -645,9 +660,6 @@ export default {
             paramType: '',
             defaultData: ''
           })
-          if (!el.timeout) {
-            el.timeout = ''
-          }
         }
       })
     },
@@ -709,7 +721,8 @@ export default {
               defaultData: cl.defaultData,
               paramCode: cl.paramCode,
               paramUnit: cl.paramUnit,
-              paramType: 0
+              paramType: 0,
+              showFalg: cl.showFalg
             })
           })
           el.listGroupParam = arr1
@@ -719,13 +732,16 @@ export default {
           processStatus: el.useCasesStatus,
           processType: el.useCasesType,
           useCasesCode: el.useCasesCode,
-          timeOut: +el.timeout,
           priority: el.priority,
           caseClassify: el.caseClassify,
           proConfigParamList: el.listGroupParam
         })
       })
       this.disabled = true
+      if (this.form.devType == 1 || this.form.devType == 3) {
+        this.form.busCycle = ''
+        this.form.ctrlCycle = ''
+      }
       if (this.id) {
         const projectInfo = {
           id: this.id,
@@ -736,6 +752,7 @@ export default {
           deviceName: this.form.deviceName,
           deviceNum: 1,
           deviceCode: this.form.deviceCode,
+          sensorCode: this.form.sensorCode,
           deviceId: this.form.deviceId,
           // duration: this.form.duration,
           modelId: this.form.modelId,
@@ -743,6 +760,9 @@ export default {
           devType: this.form.devType,
           projectName: this.form.projectName,
           projectStatus: this.form.projectStatus,
+          busCycle: this.form.busCycle,
+          ctrlCycle: this.form.ctrlCycle,
+          protocolType: this.form.protocolType,
           listProConfig: listProConfig
         }
         mylib.axios({
@@ -750,15 +770,23 @@ export default {
           type: 'json',
           params: projectInfo
         }).then((res) => {
-          // this.dialogVisible = false;
+          this.dialogVisible = false
           if (res.code == '200') {
             this.$message.success(res.msg)
             if (res.projectStatus == 1) {
-              this.$emit('getMessage', '1')
-              this.$router.push({
-                name: 'testing',
-                query: { projectCode: this.form.projectCode, userName: res.userName }
-              })
+              if (this.form.devType % 2 == 0) {
+                this.$emit('getMessage', '1')
+                this.$router.push({
+                  name: 'testing',
+                  query: { projectCode: this.form.projectCode, userName: res.userName }
+                })
+              } else {
+                this.$emit('getMessage', '1')
+                this.$router.push({
+                  name: 'testingNode',
+                  query: { projectCode: this.form.projectCode, userName: res.userName }
+                })
+              }
             } else {
               this.$emit('getMessage', '1')
               this.$router.push({
@@ -778,12 +806,16 @@ export default {
           deviceName: this.form.deviceName,
           deviceNum: 1,
           deviceCode: this.form.deviceCode,
+          sensorCode: this.form.sensorCode,
           deviceId: this.form.deviceId,
           // duration: this.form.duration,
           modelId: this.form.modelId,
           deviceModel: this.form.deviceModel,
           devType: this.form.devType,
           projectName: this.form.projectName,
+          busCycle: this.form.busCycle,
+          ctrlCycle: this.form.ctrlCycle,
+          protocolType: this.form.protocolType,
           listProConfig: listProConfig
         }
         mylib.axios({
@@ -791,15 +823,23 @@ export default {
           type: 'json',
           params: projectInfo
         }).then((res) => {
-          // this.dialogVisible = false;
+          this.dialogVisible = false
           if (res.code == '200') {
             this.$message.success(res.msg)
             if (res.projectStatus == 1) {
-              this.$emit('getMessage', '1')
-              this.$router.push({
-                name: 'testing',
-                query: { projectCode: res.projectCode, userName: res.userName }
-              })
+              if (this.form.devType % 2 == 0) {
+                this.$emit('getMessage', '1')
+                this.$router.push({
+                  name: 'testing',
+                  query: { projectCode: res.projectCode, userName: res.userName }
+                })
+              } else {
+                this.$emit('getMessage', '1')
+                this.$router.push({
+                  name: 'testingNode',
+                  query: { projectCode: res.projectCode, userName: res.userName }
+                })
+              }
             } else {
               this.$emit('getMessage', '1')
               this.$router.push({
@@ -835,7 +875,7 @@ export default {
     /* display: inline-block; */
     float: left;
     margin-left: 30%;
-    padding-top: 57px;
+    padding-top: 50px;
   box-sizing: border-box;
     /* width: 500px; */
 }
@@ -923,7 +963,7 @@ export default {
   padding-right:10px;
 }
 .paramsContent>div:last-child{
-  width:80px;
+  width:70px;
   padding-left:10px;
 }
 </style>
